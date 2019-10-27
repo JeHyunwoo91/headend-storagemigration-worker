@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-19 14:21:43 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-25 14:40:57
+ * @Last Modified time: 2019-10-27 17:17:57
  */
 import { createLogger, format, transports, loggers, Container } from 'winston';
 import 'winston-daily-rotate-file';
@@ -10,7 +10,7 @@ import fs from 'fs';
 import moment from 'moment-timezone';
 
 const { combine, printf } = format;
-const BASE_LOG_PATH = "/data/log/migcli/";
+const BASE_LOG_PATH = process.env.BASE_LOG_PATH;
 
 if (!fs.existsSync(BASE_LOG_PATH)) {
     fs.mkdirSync(BASE_LOG_PATH);

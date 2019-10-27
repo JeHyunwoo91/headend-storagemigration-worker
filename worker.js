@@ -48,7 +48,9 @@ const fileTransferMng = async (meta, _db) => {
     }
 
     await pMap(CONTAINERS, async container => {
-        let concurrency = container === "mp4" ? 2 : 40;
+        let concurrency = container === "mp4" ? 
+            parseInt(process.env.CONCURRENCY_LEVEL_OF_MP4) : 
+            parseInt(process.env.CONCURRENCY_LEVEL_OF_OTHERS);
         const queue = new PQueue({ concurrency: concurrency });
         const uploader = new ft();
 
