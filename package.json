@@ -1,0 +1,48 @@
+{
+  "name": "migcli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "babel-node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "nodemon"
+  },
+  "author": "hwje@wavve.com",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.507.0",
+    "axios": "^0.19.0",
+    "dotenv": "^8.0.0",
+    "mime": "^2.4.4",
+    "moment-timezone": "0.5.27",
+    "mysql2": "^1.6.5",
+    "p-filter": "^2.1.0",
+    "p-map": "^3.0.0",
+    "p-queue": "6.2.0",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.1.0",
+    "@azure/storage-blob": "^10.4.0",
+    "@types/dotenv": "^4.0.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/cli": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/node": "^7.5.5",
+    "@babel/plugin-transform-async-to-generator": "^7.5.0",
+    "nodemon": "^1.19.1"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "esmodules": true
+          }
+        }
+      ]
+    ]
+  }
+}
