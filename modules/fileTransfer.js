@@ -2,9 +2,11 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-28 10:04:22
+ * @Last Modified time: 2019-10-28 15:57:44
  */
 import container from './logger';
+import http from 'http';
+import https from 'https';
 import mime from 'mime';
 import path from 'path';
 import request from 'axios';
@@ -53,16 +55,35 @@ class FileTransfer {
     async upload(url, key) {
         // logger.debug(`start upload ${key}`);
         const blockBlobURL = BlockBlobURL.fromContainerURL(this.containerURL, key);
-        
-        let stream = await request({
-            method: 'get',
-            url: url,
-            responseType: 'stream',
+        let stream;
+        try {
+            stream = await request({
+                method: 'get',
+                url: url,
+                responseType: 'stream',
+                timeout: 3000,
+                // maxContentLength: ONE_MEGABYTE,
+                headers: {Accept: mime.getType(path.extname(key))},
+                httpAgent: new http.Agent({ keepAlive: true }),
+                httpsAgent: new https.Agent({ keepAlive: true }),
+            });
+        } catch (error) {
+            console.error(`request error: ${error.message}`);
+            throw error;
+        }
+
+        /* if (stream.status !== 200) {
+            console.log("stream: ", stream);
+        } */
+        stream.data.on('error', (error) => {
+            console.log("data response: ", error);
+            
         });
 
         const uploadOptions = {
+            bufferSize: parseInt(stream.headers["content-length"]),
             // bufferSize: FOUR_MEGABYTES,
-            bufferSize: TEN_MEGABYTES,
+            // bufferSize: TEN_MEGABYTES,
             maxBuffers: 5,
         };
 
@@ -73,7 +94,7 @@ class FileTransfer {
             uploadOptions.bufferSize,
             uploadOptions.maxBuffers,
             {
-                progress: ev => logger.debug(`uploadStream ev: ${JSON.stringify(ev)}`),
+                // progress: ev => logger.debug(`uploadStream ev: ${JSON.stringify(ev)}`),
                 blobHTTPHeaders: { blobContentType: mime.getType(path.extname(key)) }
             }
         );
