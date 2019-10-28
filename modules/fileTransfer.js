@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-28 16:43:39
+ * @Last Modified time: 2019-10-28 16:56:11
  */
 import container from './logger';
 import http from 'http';
@@ -64,8 +64,8 @@ class FileTransfer {
                 timeout: 3000,
                 // maxContentLength: ONE_MEGABYTE,
                 headers: {Accept: mime.getType(path.extname(key))},
-                httpAgent: new http.Agent({ keepAlive: true }),
-                httpsAgent: new https.Agent({ keepAlive: true }),
+                httpAgent: new http.Agent({ keepAlive: true, maxSockets: 1 }),
+                httpsAgent: new https.Agent({ keepAlive: true, maxSockets: 1 }),
             });
         } catch (error) {
             console.error(`request error: ${error.message}`);
