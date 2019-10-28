@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-25 17:00:28
+ * @Last Modified time: 2019-10-28 10:04:22
  */
 import container from './logger';
 import mime from 'mime';
@@ -73,6 +73,7 @@ class FileTransfer {
             uploadOptions.bufferSize,
             uploadOptions.maxBuffers,
             {
+                progress: ev => logger.debug(`uploadStream ev: ${JSON.stringify(ev)}`),
                 blobHTTPHeaders: { blobContentType: mime.getType(path.extname(key)) }
             }
         );

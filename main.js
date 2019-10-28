@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-25 16:12:45
+ * @Last Modified time: 2019-10-28 09:26:47
  */
 import { fork } from 'child_process';
 import dotenv from 'dotenv';
@@ -25,6 +25,7 @@ const jobHandler = async (pid, status) => {
         }
         
         workingJob.splice(idx, 1);
+        createWorker();
     }
 }
 
@@ -43,21 +44,18 @@ const createWorker = async () => {
 
     worker.on('exit', async (code, signal) => {
         logger.debug(`worker ${worker.pid} exit code(${code}) / signal(${signal})`);
+        
         await jobHandler(worker.pid, code);
-
-        createWorker();
     });
 
     worker.on('error', async (err) => {
         logger.error(`Event Emitted error: ${err.stack}`);
         await jobHandler(worker.pid, 1);
-
-        createWorker();
     });
 }
 
 const checkWorkingJob = () => {
-    setInterval(() => {
+    setInterval(async () => {
         logger.debug(`check workingJob(${workingJob.length}): ${JSON.stringify(workingJob)}`);
 
         // Jobs that have been delayed for more than 4 hours(14400s) are treated as delayedJob.
@@ -65,6 +63,8 @@ const checkWorkingJob = () => {
         let delayedJob = workingJob.filter(job => (job.startAt + 14400) < currTime);
         if (delayedJob.length > 0) {
             logger.debug(`over 4hour delayed job(${delayedJob.length}): ${JSON.stringify(delayedJob)}`);
+
+            await jobHandler(job.pid, 1);
         }
     }, 60000);
 }

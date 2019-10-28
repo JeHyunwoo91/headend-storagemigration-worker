@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-25 16:37:13
+ * @Last Modified time: 2019-10-28 10:03:01
  */
 import db from './modules/meta';
 import ft from './modules/fileTransfer';
@@ -51,6 +51,7 @@ const fileTransferMng = async (meta, _db) => {
         let concurrency = container === "mp4" ? 
             parseInt(process.env.CONCURRENCY_LEVEL_OF_MP4) : 
             parseInt(process.env.CONCURRENCY_LEVEL_OF_OTHERS);
+        
         const queue = new PQueue({ concurrency: concurrency });
         const uploader = new ft();
 
@@ -107,7 +108,12 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
         queue.add(async () => {
             let key = content.Key; 
             let url = cfURLTag`https://vod-${meta.channelId.toLowerCase()}.cdn.wavve.com/${key}?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTg2ODAyNzQzNH19fV0sInRpZCI6IjEyNDI1OTY1ODM0IiwidmVyIjoiMyJ9&Signature=CtgOOwLsfz6nXSb1j~r8nMs-R2jeScoctwduf-peOdJr-LffFWzrFiMpHq9LxdvhzGogYhbzAfyFpZwGTjj1K5DL0g5eBu8QpUQbjyQlX~l9sYZ6emgbkzQLhaXqlrgKyN9fibnEIBO6WaC0GO2t9nhRXp8BqPWjIVT5He6vc8~0AGZSgfPOtne7ps43m2rry4xernLg8afy7mSPLsw3-Ae12NYo9~T4uwFcMMnUfRyLfzQ6IavicCjml7Tq26YZW5WQuBEwTf~yGbQZIiFw2Ft1mKWCfx0MwizNTwllMjXsNCtvVFuSA2F9woan-MZHPV2qlVDHPsBALzO9JkpDhw__&Key-Pair-Id=APKAJ6KCI2B6BKBQMD4A`;
-            await uploader.upload(url, key);
+            try {
+                await uploader.upload(url, key);   
+            } catch (error) {
+                console.error("upload error: ", error);
+                throw error;                
+            }
             // logger.debug(`remain queue size: ${queue.size} / ${queue.pending} - uploaded ${key}`);
         });
     });
