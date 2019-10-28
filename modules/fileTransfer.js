@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-28 15:57:44
+ * @Last Modified time: 2019-10-28 16:43:39
  */
 import container from './logger';
 import http from 'http';
@@ -72,18 +72,13 @@ class FileTransfer {
             throw error;
         }
 
-        /* if (stream.status !== 200) {
-            console.log("stream: ", stream);
-        } */
         stream.data.on('error', (error) => {
             console.log("data response: ", error);
-            
         });
 
         const uploadOptions = {
-            bufferSize: parseInt(stream.headers["content-length"]),
             // bufferSize: FOUR_MEGABYTES,
-            // bufferSize: TEN_MEGABYTES,
+            bufferSize: TEN_MEGABYTES,
             maxBuffers: 5,
         };
 
