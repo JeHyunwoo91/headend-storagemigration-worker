@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-28 16:56:11
+ * @Last Modified time: 2019-10-30 08:54:30
  */
 import container from './logger';
 import http from 'http';
@@ -55,27 +55,12 @@ class FileTransfer {
     async upload(url, key) {
         // logger.debug(`start upload ${key}`);
         const blockBlobURL = BlockBlobURL.fromContainerURL(this.containerURL, key);
-        let stream;
-        try {
-            stream = await request({
-                method: 'get',
-                url: url,
-                responseType: 'stream',
-                timeout: 3000,
-                // maxContentLength: ONE_MEGABYTE,
-                headers: {Accept: mime.getType(path.extname(key))},
-                httpAgent: new http.Agent({ keepAlive: true, maxSockets: 1 }),
-                httpsAgent: new https.Agent({ keepAlive: true, maxSockets: 1 }),
-            });
-        } catch (error) {
-            console.error(`request error: ${error.message}`);
-            throw error;
-        }
-
-        stream.data.on('error', (error) => {
-            console.log("data response: ", error);
+        let stream = await request({
+            method: 'get',
+            url: url,
+            responseType: 'stream',
         });
-
+        
         const uploadOptions = {
             // bufferSize: FOUR_MEGABYTES,
             bufferSize: TEN_MEGABYTES,

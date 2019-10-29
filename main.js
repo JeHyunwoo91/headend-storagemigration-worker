@@ -25,8 +25,9 @@ const jobHandler = async (pid, status) => {
         }
         
         workingJob.splice(idx, 1);
-        createWorker();
     }
+
+    createWorker();
 }
 
 const createWorker = async () => {
@@ -50,6 +51,7 @@ const createWorker = async () => {
 
     worker.on('error', async (err) => {
         logger.error(`Event Emitted error: ${err.stack}`);
+        
         await jobHandler(worker.pid, 1);
     });
 }

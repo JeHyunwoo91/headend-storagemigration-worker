@@ -2,18 +2,19 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-28 15:28:59
+ * @Last Modified time: 2019-10-30 08:56:38
  */
 import db from './modules/meta';
+import EventEmitter from 'eventemitter3';
 import ft from './modules/fileTransfer';
 import container from './modules/logger';
 import path from 'path';
-import pFilter from 'p-filter';
 import pMap from 'p-map';
 import PQueue from 'p-queue';
 import s3 from './modules/s3ListObjects';
 
 const logger = container.get('migcliLogger');
+const queueEventEmitter = new EventEmitter();
 
 const CONTAINERS = ["dash", "hls", "mp4", "etc"];
 // const CONTAINERS = ["etc"];
@@ -57,10 +58,12 @@ const fileTransferMng = async (meta, _db) => {
 
         logger.debug(`started move [${container}/${meta.contentId}]`);
 
+
         await fileTransferIntf(meta, container, uploader, queue);
         await queue.onIdle();
         logger.debug(`[${container}/${meta.contentId}] All files moved`);
     });
+    
     await _db.report(meta.j_id, "Y");
     logger.debug(`[${meta.contentId}] report "Y"`);
 
@@ -74,7 +77,7 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
      */
     let lists = await new s3().getBucketList(meta, container, continuationToken);
 
-    let filteredList = await pFilter(lists.contents, async content => {
+    await pMap(lists.contents, async content => {
         let key = content.Key;
         if (path.extname(key).length <= 2) {
             return false;
@@ -100,22 +103,22 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
             }
         }
 
-        return true;
-    });
 
-    await pMap(filteredList, async content => {
-        // list의 모든 key를 CF url로 재구성 및 병렬 처리
         queue.add(async () => {
-            let key = content.Key; 
+            let key = content.Key;
             let url = cfURLTag`https://vod-${meta.channelId.toLowerCase()}.cdn.wavve.com/${key}?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTg2ODAyNzQzNH19fV0sInRpZCI6IjEyNDI1OTY1ODM0IiwidmVyIjoiMyJ9&Signature=CtgOOwLsfz6nXSb1j~r8nMs-R2jeScoctwduf-peOdJr-LffFWzrFiMpHq9LxdvhzGogYhbzAfyFpZwGTjj1K5DL0g5eBu8QpUQbjyQlX~l9sYZ6emgbkzQLhaXqlrgKyN9fibnEIBO6WaC0GO2t9nhRXp8BqPWjIVT5He6vc8~0AGZSgfPOtne7ps43m2rry4xernLg8afy7mSPLsw3-Ae12NYo9~T4uwFcMMnUfRyLfzQ6IavicCjml7Tq26YZW5WQuBEwTf~yGbQZIiFw2Ft1mKWCfx0MwizNTwllMjXsNCtvVFuSA2F9woan-MZHPV2qlVDHPsBALzO9JkpDhw__&Key-Pair-Id=APKAJ6KCI2B6BKBQMD4A`;
-
-            await uploader.upload(url, key); 
-            // logger.debug(`remain queue size: ${queue.size} / ${queue.pending} - uploaded ${key}`);
+            try {
+                await uploader.upload(url, key);
+                // console.log(`remain queue size: ${queue.size} / ${queue.pending} - uploaded ${key}`);
+            } catch (error) {
+                queueEventEmitter.emit('error', error);
+            }
         });
     });
 
     if (lists.nextContinuationToken) {
         // 조회 한 S3 list가 마지막 list가 아니라면 마지막 list가 조회 될때 까지 recursive call
+        // return await fileTransferIntf(meta, container, uploader, queue, lists.nextContinuationToken);
         return await fileTransferIntf(meta, container, uploader, queue, lists.nextContinuationToken);
     } else {
         return true;
@@ -131,31 +134,43 @@ const start = async () => {
         return true;
     }
 
-    logger.debug(`[${process.pid}] Started migrating [${meta[0].contentId}]`);
-    process.send({pid: process.pid, jobId: meta[0].j_id, contentId: meta[0].contentId, startAt: Math.floor(Date.now() / 1000)});
+    const contentId = meta[0].contentId;
+
+    logger.debug(`[${process.pid}] Started migrating [${contentId}]`);
+    process.send({pid: process.pid, jobId: meta[0].j_id, contentId: contentId, startAt: Math.floor(Date.now() / 1000)});
     
     logger.debug(`get meta: ${JSON.stringify(meta, null, 4)}`);
     try {
         await fileTransferMng(meta[0], _db);
-        logger.debug(`[${process.pid}] Finished migrating [${meta[0].contentId}]`);
+        queueEventEmitter.emit('end', contentId);
     } catch (error) {
         await _db.report(meta[0].j_id, "F");
-        logger.error(`[${meta[0].contentId}] report "F" in worker`);
+        logger.error(`[${contentId}] report "F" in worker`);
         throw error;
     }
 }
 
 (async () => {
     try {
+        queueEventEmitter.on('error', (error) => {
+            logger.error(`enqueued upload Job Error: ${error.message}`);
+
+            process.exit(1); // abnormal exit 
+        });
+
+        queueEventEmitter.on('end', (contentId) => {
+            logger.debug(`[${process.pid}] Finished migrating [${contentId}]`);
+
+            process.exit(0); // abnormal exit 
+        });
+        
         await start();
         process.send(`Done.`);
 
         process.exit(0); // successful exit
     } catch (err) {
         logger.error(`Error occurred worker: ${err.stack}`);
-
-        setTimeout(() => {
-            process.exit(1); // abnormal exit 
-        }, 1000);
+        
+        process.exit(1); // abnormal exit 
     }
 })();
