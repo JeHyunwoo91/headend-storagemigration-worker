@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-30 18:28:57
+ * @Last Modified time: 2019-10-30 18:32:02
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -73,7 +73,7 @@ const checkWorkingJob = () => {
 
         // Jobs that have been delayed for more than 4 hours(14400s) are treated as delayedJob.
         let currTime = Math.floor(Date.now() / 1000);
-        let abnormalJobs = workingJob.filter(job => ((job.startAt + 14400) < currTime || (job.hb + 120) < currTime));
+        let abnormalJobs = workingJob.filter(job => ((job.startAt + 14400) < currTime || (job.hb + 60) < currTime));
         if (abnormalJobs.length > 0) {
             logger.debug(`over 4hour delayed job(${abnormalJobs.length}): ${JSON.stringify(abnormalJobs)}`);
 
