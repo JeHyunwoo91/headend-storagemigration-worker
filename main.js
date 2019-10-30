@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-30 18:19:53
+ * @Last Modified time: 2019-10-30 18:28:57
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -49,7 +49,7 @@ const createWorker = async () => {
             } else {
                 logger.error(`Invalid worker ${worker.pid}`);
 
-                await jobHandler(worker.pid, 1);
+                (async () => await jobHandler(worker.pid, 1))();
             }
         }
     });
