@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-30 18:32:02
+ * @Last Modified time: 2019-10-30 18:33:58
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -37,8 +37,8 @@ const createWorker = async () => {
     
 
     worker.on('message', (msg) => {
-        logger.debug(`Message from ${worker.pid} : ${JSON.stringify(msg)}`);
         if (msg instanceof Object) {
+            logger.debug(`Message from ${worker.pid} : ${JSON.stringify(msg)}`);
             workingJob.push(msg);
             logger.debug(`${worker.pid} push to workingJob`);
         } else if (msg === "hb") {
