@@ -143,7 +143,7 @@ const start = async () => {
         pid: process.pid, 
         jobId: meta[0].j_id, 
         contentId: contentId, 
-        tartAt: currTime,
+        startAt: currTime,
         hb: currTime
     });
 
