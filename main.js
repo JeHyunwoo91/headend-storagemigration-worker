@@ -2,12 +2,13 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-28 09:26:47
+ * @Last Modified time: 2019-10-30 18:19:53
  */
 import { fork } from 'child_process';
+import container from './modules/logger';
 import dotenv from 'dotenv';
 import iDB from './modules/meta';
-import container from './modules/logger';
+import os from 'os';
 dotenv.config();
 
 const logger = container.get('migcliLogger');
@@ -40,6 +41,16 @@ const createWorker = async () => {
         if (msg instanceof Object) {
             workingJob.push(msg);
             logger.debug(`${worker.pid} push to workingJob`);
+        } else if (msg === "hb") {
+            let idx = workingJob.findIndex(job => job.pid == worker.pid);
+            if (idx > -1) {
+                let currTime = Math.floor(Date.now() / 1000);
+                workingJob[idx].hb = currTime;
+            } else {
+                logger.error(`Invalid worker ${worker.pid}`);
+
+                await jobHandler(worker.pid, 1);
+            }
         }
     });
 
@@ -51,7 +62,7 @@ const createWorker = async () => {
 
     worker.on('error', async (err) => {
         logger.error(`Event Emitted error: ${err.stack}`);
-        
+
         await jobHandler(worker.pid, 1);
     });
 }
@@ -62,11 +73,13 @@ const checkWorkingJob = () => {
 
         // Jobs that have been delayed for more than 4 hours(14400s) are treated as delayedJob.
         let currTime = Math.floor(Date.now() / 1000);
-        let delayedJob = workingJob.filter(job => (job.startAt + 14400) < currTime);
-        if (delayedJob.length > 0) {
-            logger.debug(`over 4hour delayed job(${delayedJob.length}): ${JSON.stringify(delayedJob)}`);
+        let abnormalJobs = workingJob.filter(job => ((job.startAt + 14400) < currTime || (job.hb + 120) < currTime));
+        if (abnormalJobs.length > 0) {
+            logger.debug(`over 4hour delayed job(${abnormalJobs.length}): ${JSON.stringify(abnormalJobs)}`);
 
-            await jobHandler(job.pid, 1);
+            abnormalJobs.map((job) => {
+                await jobHandler(job.pid, 1);
+            });
         }
     }, 60000);
 }

@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-30 08:56:38
+ * @Last Modified time: 2019-10-30 18:24:22
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -17,7 +17,6 @@ const logger = container.get('migcliLogger');
 const queueEventEmitter = new EventEmitter();
 
 const CONTAINERS = ["dash", "hls", "mp4", "etc"];
-// const CONTAINERS = ["etc"];
 
 const cfURLTag = (strs, ...vars) => {
     const url = strs.reduce((prev, curr, idx) => prev + strs[idx] + (vars[idx] ? vars[idx] : ''), '');
@@ -134,12 +133,21 @@ const start = async () => {
         return true;
     }
 
+    logger.debug(`get meta: ${JSON.stringify(meta, null, 4)}`);
+
     const contentId = meta[0].contentId;
 
     logger.debug(`[${process.pid}] Started migrating [${contentId}]`);
-    process.send({pid: process.pid, jobId: meta[0].j_id, contentId: contentId, startAt: Math.floor(Date.now() / 1000)});
-    
-    logger.debug(`get meta: ${JSON.stringify(meta, null, 4)}`);
+    let currTime = Math.floor(Date.now() / 1000);
+    process.send({
+        pid: process.pid, 
+        jobId: meta[0].j_id, 
+        contentId: contentId, 
+        tartAt: currTime,
+        hb: currTime
+    });
+
+    hb();
     try {
         await fileTransferMng(meta[0], _db);
         queueEventEmitter.emit('end', contentId);
@@ -148,6 +156,12 @@ const start = async () => {
         logger.error(`[${contentId}] report "F" in worker`);
         throw error;
     }
+}
+
+const hb = () => {
+    setInterval(() => {
+        process.send('hb');
+    }, 1000);
 }
 
 (async () => {

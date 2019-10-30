@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-30 08:54:30
+ * @Last Modified time: 2019-10-30 18:15:28
  */
 import container from './logger';
 import http from 'http';
@@ -62,8 +62,7 @@ class FileTransfer {
         });
         
         const uploadOptions = {
-            // bufferSize: FOUR_MEGABYTES,
-            bufferSize: TEN_MEGABYTES,
+            bufferSize: parseInt(process.env.UPLOAD_BUFFER_SIZE),
             maxBuffers: 5,
         };
 
