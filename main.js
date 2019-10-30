@@ -77,7 +77,7 @@ const checkWorkingJob = () => {
         if (abnormalJobs.length > 0) {
             logger.debug(`over 4hour delayed job(${abnormalJobs.length}): ${JSON.stringify(abnormalJobs)}`);
 
-            abnormalJobs.map((job) => {
+            abnormalJobs.map(async (job) => {
                 await jobHandler(job.pid, 1);
             });
         }
