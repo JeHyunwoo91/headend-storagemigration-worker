@@ -71,9 +71,9 @@ const checkWorkingJob = () => {
     setInterval(async () => {
         logger.debug(`check workingJob(${workingJob.length}): ${JSON.stringify(workingJob)}`);
 
-        // Jobs that have been delayed for more than 4 hours(14400s) are treated as delayedJob.
+        // Jobs that have been delayed for more than 2 hours(7200s) are treated as delayedJob.
         let currTime = Math.floor(Date.now() / 1000);
-        let abnormalJobs = workingJob.filter(job => ((job.startAt + 14400) < currTime || (job.hb + 60) < currTime));
+        let abnormalJobs = workingJob.filter(job => ((job.startAt + parseInt(process.env.WORKER_MAXIMUM_ALIVE_DURATION)) < currTime || (job.hb + 60) < currTime));
         if (abnormalJobs.length > 0) {
             logger.debug(`over 4hour delayed job(${abnormalJobs.length}): ${JSON.stringify(abnormalJobs)}`);
 
