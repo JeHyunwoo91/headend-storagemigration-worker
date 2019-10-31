@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 14:24:45
+ * @Last Modified time: 2019-10-31 14:27:11
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -173,9 +173,9 @@ const sleep = (sec) => {
 
 (async () => {
     try {
-        queueEventEmitter.on('error', (error) => {
+        queueEventEmitter.on('error', async (error) => {
             logger.error(`enqueued upload Job Error: ${error.message}`);
-            
+
             await sleep(process.env.SLEEP_INTERVAL);
 
             process.exit(1); // abnormal exit 
