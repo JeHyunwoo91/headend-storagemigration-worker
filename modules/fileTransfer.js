@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 13:58:17
+ * @Last Modified time: 2019-10-31 14:02:43
  */
 import container from './logger';
 import http from 'http';
@@ -55,8 +55,9 @@ class FileTransfer {
     async upload(url, key) {
         // logger.debug(`start upload ${key}`);
         const blockBlobURL = BlockBlobURL.fromContainerURL(this.containerURL, key);
+        let stream;
         try {
-            let stream = await request({
+            stream = await request({
                 method: 'get',
                 url: url,
                 responseType: 'stream'
