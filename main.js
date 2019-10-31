@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 08:08:33
+ * @Last Modified time: 2019-11-01 08:31:39
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -70,12 +70,16 @@ const createWorker = async () => {
         logger.debug(`worker ${worker.pid} exit code(${code}) / signal(${signal})`);
         
         await jobHandler(worker.pid, code);
+
+        createWorker();
     });
 
     worker.on('error', async (err) => {
         logger.error(`Event Emitted error: ${err.stack}`);
 
         await jobHandler(worker.pid, 1);
+
+        createWorker();
     });
 }
 
