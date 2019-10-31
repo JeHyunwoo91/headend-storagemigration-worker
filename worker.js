@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 07:43:25
+ * @Last Modified time: 2019-11-01 08:08:18
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -167,11 +167,10 @@ const hb = () => {
             logger.error(`[${process.pid}]enqueued upload Job Error: ${error.message}`);
 
             if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD)) {
-                // await sleep(process.env.SLEEP_INTERVAL);
                 process.send("UO");
+            } else {
+                process.exit(1); // abnormal exit 
             }
-
-            process.exit(1); // abnormal exit 
         });
 
         queueEventEmitter.on('end', (contentId) => {

@@ -2,13 +2,12 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 07:49:14
+ * @Last Modified time: 2019-11-01 08:08:33
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
 import dotenv from 'dotenv';
 import iDB from './modules/meta';
-import os from 'os';
 dotenv.config();
 
 const logger = container.get('migcliLogger');
@@ -33,8 +32,6 @@ const jobHandler = async (pid, status) => {
         
         workingJob.splice(idx, 1);
     }
-
-    // createWorker();
 }
 
 const createWorker = async () => {
@@ -62,6 +59,7 @@ const createWorker = async () => {
         } else if (msg === "UO") { // Upload Overload
             await jobHandler(worker.pid, 1);
             logger.error(`[${process.pid}] Waiting for Azure Storage Server stabilize`);
+            worker.kill(9);
             await sleep(process.env.SLEEP_INTERVAL);
 
             createWorker();
