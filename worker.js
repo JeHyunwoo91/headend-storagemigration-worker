@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 14:27:11
+ * @Last Modified time: 2019-10-31 15:58:05
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -17,6 +17,7 @@ const logger = container.get('migcliLogger');
 const queueEventEmitter = new EventEmitter();
 
 const CONTAINERS = ["dash", "hls", "mp4", "etc"];
+const STORAGE_OVERLOAD_ERROR_WORD = 'ServerBusy';
 
 const cfURLTag = (strs, ...vars) => {
     const url = strs.reduce((prev, curr, idx) => prev + strs[idx] + (vars[idx] ? vars[idx] : ''), '');
@@ -121,7 +122,7 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
 }
 
 const start = async () => {
-    logger.debug(`Started worker ${process.pid}`);
+    logger.debug(`[${process.pid}]]tarted worker`);
     
     let _db = new db();
     const meta = await _db.getMeta(process.pid);
@@ -129,7 +130,7 @@ const start = async () => {
         return true;
     }
 
-    logger.debug(`get meta: ${JSON.stringify(meta, null, 4)}`);
+    logger.debug(`[${process.pid}] Get meta: ${JSON.stringify(meta, null, 4)}`);
 
     const contentId = meta[0].contentId;
 
@@ -149,7 +150,7 @@ const start = async () => {
         queueEventEmitter.emit('end', contentId);
     } catch (error) {
         await _db.report(meta[0].j_id, "F");
-        logger.error(`[${contentId}] report "F" in worker`);
+        logger.error(`[${process.pid} - ${contentId}] report "F" in worker`);
         throw error;
     }
 }
@@ -162,7 +163,6 @@ const hb = () => {
 
 const sleep = (sec) => {
     return new Promise((resolve, reject) => {
-        logger.debug("Waiting for Azure Storage Server stabilize");
         setTimeout(resolve, parseInt(sec) * 1000);
     });
 }
@@ -170,9 +170,12 @@ const sleep = (sec) => {
 (async () => {
     try {
         queueEventEmitter.on('error', async (error) => {
-            logger.error(`enqueued upload Job Error: ${error.message}`);
+            logger.error(`[${process.pid}]enqueued upload Job Error: ${error.message}`);
 
-            await sleep(process.env.SLEEP_INTERVAL);
+            if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD)) {
+                logger.error(`[${process.pid}] Waiting for Azure Storage Server stabilize`);
+                await sleep(process.env.SLEEP_INTERVAL);
+            }
 
             process.exit(1); // abnormal exit 
         });
