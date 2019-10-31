@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-14 17:04:00 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 14:00:59
+ * @Last Modified time: 2019-10-31 17:43:16
  */
 import mysql from 'mysql2/promise';
 import container from './logger';
@@ -38,7 +38,7 @@ class Meta {
                         acquire, 
                         j_id 
                     FROM 
-                        backoffice_dump 
+                        ${process.env.TABLE_NAME} 
                     WHERE 
                         isMig = 'N' 
                     ORDER BY 
@@ -47,8 +47,8 @@ class Meta {
                     FOR UPDATE`);
                 if (rows.length > 0) {
                     await connection.query(`
-                        UPDATE 
-                            backoffice_dump 
+                        UPDATE
+                        ${process.env.TABLE_NAME} 
                         SET 
                             isMig = "P" 
                         WHERE 
@@ -82,7 +82,7 @@ class Meta {
                 await connection.beginTransaction();
                 await connection.query(`
                     UPDATE
-                        backOffice_dump
+                        ${process.env.TABLE_NAME} 
                     SET
                         isMig = "${state}"
                     WHERE

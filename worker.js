@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 16:32:10
+ * @Last Modified time: 2019-10-31 18:14:16
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -122,7 +122,7 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
 }
 
 const start = async () => {
-    logger.debug(`[${process.pid}]]tarted worker`);
+    logger.debug(`[${process.pid}]started worker`);
     
     let _db = new db();
     const meta = await _db.getMeta(process.pid);
