@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 13:19:21
+ * @Last Modified time: 2019-10-31 14:24:45
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -164,13 +164,19 @@ const hb = () => {
     }, 1000);
 }
 
+const sleep = (sec) => {
+    return new Promise((resolve, reject) => {
+        logger.debug("Waiting for Azure Storage Server stabilize");
+        setTimeout(resolve, parseInt(sec) * 1000);
+    });
+}
+
 (async () => {
     try {
         queueEventEmitter.on('error', (error) => {
             logger.error(`enqueued upload Job Error: ${error.message}`);
-            setTimeout(() => {
-                logger.debug(`Wait for Blob Storage Server stabilize`);
-            }, 60000);
+            
+            await sleep(process.env.SLEEP_INTERVAL);
 
             process.exit(1); // abnormal exit 
         });
