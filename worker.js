@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 09:29:09
+ * @Last Modified time: 2019-10-31 13:19:21
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -168,6 +168,9 @@ const hb = () => {
     try {
         queueEventEmitter.on('error', (error) => {
             logger.error(`enqueued upload Job Error: ${error.message}`);
+            setTimeout(() => {
+                logger.debug(`Wait for Blob Storage Server stabilize`);
+            }, 60000);
 
             process.exit(1); // abnormal exit 
         });
