@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 13:21:44
+ * @Last Modified time: 2019-10-31 13:50:32
  */
 import container from './logger';
 import http from 'http';
@@ -27,6 +27,7 @@ const CONTAINER_NAME = process.env.AZURE_STORAGE_CONTAINER_NAME;
 const ONE_MEGABYTE = 1024 * 1024;
 const FOUR_MEGABYTES = 4 * ONE_MEGABYTE;
 const TEN_MEGABYTES = 10 * ONE_MEGABYTE;
+const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 100 });
 
 /**
  * TODO FileTransfer
@@ -59,6 +60,7 @@ class FileTransfer {
             method: 'get',
             url: url,
             responseType: 'stream',
+            httpsAgent: httpsAgent
         });
         
         const uploadOptions = {
