@@ -62,7 +62,7 @@ class FileTransfer {
         });
         
         const uploadOptions = {
-            bufferSize: parseInt(process.env.UPLOAD_BUFFER_SIZE),
+            bufferSize: FOUR_MEGABYTES,
             maxBuffers: 5,
         };
 
