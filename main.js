@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 16:01:25
+ * @Last Modified time: 2019-11-01 07:49:14
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -14,6 +14,12 @@ dotenv.config();
 const logger = container.get('migcliLogger');
 
 let workingJob = new Array();
+
+const sleep = (sec) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, parseInt(sec) * 1000);
+    });
+}
 
 const jobHandler = async (pid, status) => {
     const db = new iDB();
@@ -28,7 +34,7 @@ const jobHandler = async (pid, status) => {
         workingJob.splice(idx, 1);
     }
 
-    createWorker();
+    // createWorker();
 }
 
 const createWorker = async () => {
@@ -36,21 +42,29 @@ const createWorker = async () => {
     logger.debug(`Created worker ${worker.pid}`);
     
 
-    worker.on('message', (msg) => {
-        if (msg instanceof Object) {
+    worker.on('message', async (msg) => {
+        if (msg instanceof Object) { // worker getting new job
             logger.debug(`Message from ${worker.pid} : ${JSON.stringify(msg)}`);
             workingJob.push(msg);
             logger.debug(`${worker.pid} push to workingJob`);
-        } else if (msg === "hb") {
+        } else if (msg === "HB") { // checking worker HeartBeat every seconds
             let idx = workingJob.findIndex(job => job.pid == worker.pid);
-            if (idx > -1) {
+            if (idx > -1) { // exist worker
                 let currTime = Math.floor(Date.now() / 1000);
                 workingJob[idx].hb = currTime;
-            } else {
+            } else { // non-exist worker
                 logger.error(`Invalid worker ${worker.pid}`);
 
-                (async () => await jobHandler(worker.pid, 1))();
+                await jobHandler(worker.pid, 1);
+
+                createWorker();
             }
+        } else if (msg === "UO") { // Upload Overload
+            await jobHandler(worker.pid, 1);
+            logger.error(`[${process.pid}] Waiting for Azure Storage Server stabilize`);
+            await sleep(process.env.SLEEP_INTERVAL);
+
+            createWorker();
         }
     });
 

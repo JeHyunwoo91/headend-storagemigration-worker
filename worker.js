@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 18:14:16
+ * @Last Modified time: 2019-11-01 07:43:25
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -157,14 +157,8 @@ const start = async () => {
 
 const hb = () => {
     setInterval(() => {
-        process.send('hb');
+        process.send('HB');
     }, 1000);
-}
-
-const sleep = (sec) => {
-    return new Promise((resolve, reject) => {
-        setTimeout(resolve, parseInt(sec) * 1000);
-    });
 }
 
 (async () => {
@@ -173,8 +167,8 @@ const sleep = (sec) => {
             logger.error(`[${process.pid}]enqueued upload Job Error: ${error.message}`);
 
             if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD)) {
-                logger.error(`[${process.pid}] Waiting for Azure Storage Server stabilize`);
-                await sleep(process.env.SLEEP_INTERVAL);
+                // await sleep(process.env.SLEEP_INTERVAL);
+                process.send("UO");
             }
 
             process.exit(1); // abnormal exit 
