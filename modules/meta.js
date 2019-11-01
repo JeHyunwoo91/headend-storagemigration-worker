@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-14 17:04:00 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 17:43:16
+ * @Last Modified time: 2019-11-01 13:58:33
  */
 import mysql from 'mysql2/promise';
 import container from './logger';
@@ -40,7 +40,7 @@ class Meta {
                     FROM 
                         ${process.env.TABLE_NAME} 
                     WHERE 
-                        isMig = 'N' 
+                        isMig = ${process.env.ISMIG} 
                     ORDER BY 
                         j_UpdatedAt DESC 
                     LIMIT 1 
