@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 08:31:39
+ * @Last Modified time: 2019-11-01 13:38:38
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -27,7 +27,7 @@ const jobHandler = async (pid, status) => {
         if (status !== 0) {
             logger.error(`${pid} return code ${status instanceof Object ? JSON.stringify(status, null, 4) : status}`);
             await db.report(workingJob[idx].jobId, "F");
-            logger.error(`[${workingJob[idx].contentId}] report "F" from main`);
+            logger.error(`[${pid} - ${workingJob[idx].contentId}] report "F" from main`);
         }
         
         workingJob.splice(idx, 1);
