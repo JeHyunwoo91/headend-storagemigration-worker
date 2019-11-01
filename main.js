@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 13:38:38
+ * @Last Modified time: 2019-11-01 15:59:59
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -58,7 +58,7 @@ const createWorker = async () => {
             }
         } else if (msg === "UO") { // Upload Overload
             await jobHandler(worker.pid, 1);
-            logger.error(`[${process.pid}] Waiting for Azure Storage Server stabilize`);
+            logger.error(`[${process.pid}] Waiting for Network stabilize`);
             worker.kill(9);
             await sleep(process.env.SLEEP_INTERVAL);
 

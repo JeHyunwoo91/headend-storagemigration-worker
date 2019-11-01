@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 13:58:31
+ * @Last Modified time: 2019-11-01 15:58:23
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -18,6 +18,7 @@ const queueEventEmitter = new EventEmitter();
 
 const CONTAINERS = ["dash", "hls", "mp4", "etc"];
 const STORAGE_OVERLOAD_ERROR_WORD = 'ServerBusy';
+const READ_ECONNRESET_ERROR_WORD = 'ECONNRESET';
 
 const fileTransferMng = async (meta, _db) => {
     if (meta === undefined) {
@@ -161,7 +162,8 @@ const hb = () => {
         queueEventEmitter.on('error', async (error) => {
             logger.error(`[${process.pid}]enqueued upload Job Error: ${error.message}`);
 
-            if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD)) {
+            if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD) ||
+                error.message.includes(READ_ECONNRESET_ERROR_WORD)) {
                 process.send("UO");
             } else {
                 process.exit(1); // abnormal exit 
