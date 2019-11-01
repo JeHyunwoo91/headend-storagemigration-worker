@@ -161,13 +161,14 @@ const hb = () => {
     try {
         queueEventEmitter.on('error', async (error) => {
             logger.error(`[${process.pid}]enqueued upload Job Error: ${error.message}`);
+            process.send("UO");
 
-            if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD) ||
+            /* if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD) ||
                 error.message.includes(READ_ECONNRESET_ERROR_WORD)) {
                 process.send("UO");
             } else {
                 process.exit(1); // abnormal exit 
-            }
+            } */
         });
 
         queueEventEmitter.on('end', (contentId) => {
