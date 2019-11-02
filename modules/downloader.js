@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-11-02 16:33:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 17:05:04
+ * @Last Modified time: 2019-11-02 17:19:22
  */
 import axios from 'axios';
 
@@ -14,7 +14,6 @@ const downloader = axios.create({});
 
 downloader.interceptors.request.use(config => {
     return new Promise((resolve, reject) => {
-        console.log(`now pending: `, PENDING_REQUESTS);
         let interval = setInterval(() => {
             if (PENDING_REQUESTS < MAX_REQUESTS_COUNT) {
                 PENDING_REQUESTS++;
