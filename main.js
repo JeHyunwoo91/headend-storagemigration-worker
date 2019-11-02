@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 14:07:39
+ * @Last Modified time: 2019-11-02 14:56:06
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -25,7 +25,7 @@ const jobHandler = async (pid, status) => {
     let idx = workingJob.findIndex(job => job.pid === pid);
     if (idx > -1) {
         if (status !== 0) {
-            logger.error(`${pid} return code ${status instanceof Object ? JSON.stringify(status, null, 4) : status}`);
+            logger.error(`${pid} return code ${status}`);
             await db.report(workingJob[idx].jobId, "F");
             logger.error(`[${pid} - ${workingJob[idx].contentId}] report "F" from main`);
         }
@@ -60,11 +60,6 @@ const createWorker = async () => {
             worker.disconnect();
             logger.error(`[${worker.pid}] Immediately disconnect with worker...`);
             worker.kill(9);
-            await jobHandler(worker.pid, 1);
-            logger.error(`Waiting for create new worker until Network stabilize`);
-            await sleep(process.env.SLEEP_INTERVAL);
-
-            createWorker();
         }
     });
 
@@ -72,6 +67,11 @@ const createWorker = async () => {
         logger.debug(`worker ${worker.pid} exit code(${code}) / signal(${signal})`);
         
         await jobHandler(worker.pid, code);
+
+        if (signal === "SIGKILL" || signal === "SIGABRT") {
+            logger.error(`Waiting for create new worker until Network stabilize`);
+            await sleep(process.env.SLEEP_INTERVAL);
+        }
 
         createWorker();
     });

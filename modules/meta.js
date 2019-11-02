@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-14 17:04:00 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 15:55:18
+ * @Last Modified time: 2019-11-02 15:00:47
  */
 import mysql from 'mysql2/promise';
 import container from './logger';
@@ -64,7 +64,7 @@ class Meta {
                 throw err;
             }
         } catch (err) {
-            logger.error(`!!! Cannot connect to getMeta !!! Error: ${err.stack}`);
+            logger.error(`!!! [getMeta] Cannot connect to DB connection pool !!! Error: ${err.stack}`);
             throw err;
         }
     }
@@ -97,7 +97,7 @@ class Meta {
                 throw err;
             }
         } catch (err) {
-            logger.error(`!!! Cannot connect to report !!! Error: ${err.stack}`);
+            logger.error(`!!! [report] Cannot connect to DB connection pool !!! Error: ${err.stack}`);
             throw err;
         }
     }

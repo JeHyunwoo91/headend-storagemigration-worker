@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 13:43:29
+ * @Last Modified time: 2019-11-02 14:38:28
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -162,13 +162,6 @@ const hb = () => {
         queueEventEmitter.on('error', async (key, error) => {
             logger.error(`[${process.pid} - ${key}]enqueued upload Job Error: ${error.message}`);
             process.send("UO");
-
-            /* if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD) ||
-                error.message.includes(READ_ECONNRESET_ERROR_WORD)) {
-                process.send("UO");
-            } else {
-                process.exit(1); // abnormal exit 
-            } */
         });
 
         queueEventEmitter.on('end', (contentId) => {
@@ -182,7 +175,7 @@ const hb = () => {
 
         process.exit(0); // successful exit
     } catch (err) {
-        logger.error(`Error occurred worker: ${err.stack}`);
+        logger.error(`Error occurred worker: ${err.message}`);
         
         process.exit(1); // abnormal exit 
     }
