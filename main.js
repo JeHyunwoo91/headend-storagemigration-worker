@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 16:40:10
+ * @Last Modified time: 2019-11-02 14:07:39
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -57,9 +57,11 @@ const createWorker = async () => {
                 createWorker();
             }
         } else if (msg === "UO") { // Upload Overload
-            await jobHandler(worker.pid, 1);
-            logger.error(`[${process.pid}] Waiting for Network stabilize`);
+            worker.disconnect();
+            logger.error(`[${worker.pid}] Immediately disconnect with worker...`);
             worker.kill(9);
+            await jobHandler(worker.pid, 1);
+            logger.error(`Waiting for create new worker until Network stabilize`);
             await sleep(process.env.SLEEP_INTERVAL);
 
             createWorker();

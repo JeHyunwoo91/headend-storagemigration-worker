@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-01 15:58:23
+ * @Last Modified time: 2019-11-02 13:43:29
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -37,7 +37,7 @@ const fileTransferMng = async (meta, _db) => {
             meta.mediaVersion = mv - 1;
         } else {
             // report "D" and exit
-            logger.debug(`Skip this meta and report to 'D'`);
+            logger.debug(`[${process.pid} - ${meta.contentId}]Skip this meta and report to 'D'`);
             await _db.report(meta.j_id, "D");
 
             return true;
@@ -61,7 +61,7 @@ const fileTransferMng = async (meta, _db) => {
     });
     
     await _db.report(meta.j_id, "Y");
-    logger.debug(`[${meta.contentId}] report "Y"`);
+    logger.debug(`[${process.pid} - ${meta.contentId}] report "Y"`);
 
     return true;
 }
@@ -105,7 +105,7 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
             let url = `https://vod-${meta.channelId.toLowerCase()}.cdn.wavve.com/${key}?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTg2ODAyNzQzNH19fV0sInRpZCI6IjEyNDI1OTY1ODM0IiwidmVyIjoiMyJ9&Signature=CtgOOwLsfz6nXSb1j~r8nMs-R2jeScoctwduf-peOdJr-LffFWzrFiMpHq9LxdvhzGogYhbzAfyFpZwGTjj1K5DL0g5eBu8QpUQbjyQlX~l9sYZ6emgbkzQLhaXqlrgKyN9fibnEIBO6WaC0GO2t9nhRXp8BqPWjIVT5He6vc8~0AGZSgfPOtne7ps43m2rry4xernLg8afy7mSPLsw3-Ae12NYo9~T4uwFcMMnUfRyLfzQ6IavicCjml7Tq26YZW5WQuBEwTf~yGbQZIiFw2Ft1mKWCfx0MwizNTwllMjXsNCtvVFuSA2F9woan-MZHPV2qlVDHPsBALzO9JkpDhw__&Key-Pair-Id=APKAJ6KCI2B6BKBQMD4A`;
             await uploader.upload(url, key);
             // console.log(`remain queue size: ${queue.size} / ${queue.pending} - uploaded ${key}`);
-        }).catch(error => queueEventEmitter.emit('error', error));
+        }).catch(error => queueEventEmitter.emit('error', key, error));
     });
 
     if (lists.nextContinuationToken) {
@@ -159,8 +159,8 @@ const hb = () => {
 
 (async () => {
     try {
-        queueEventEmitter.on('error', async (error) => {
-            logger.error(`[${process.pid}]enqueued upload Job Error: ${error.message}`);
+        queueEventEmitter.on('error', async (key, error) => {
+            logger.error(`[${process.pid} - ${key}]enqueued upload Job Error: ${error.message}`);
             process.send("UO");
 
             /* if (error.message.includes(STORAGE_OVERLOAD_ERROR_WORD) ||
