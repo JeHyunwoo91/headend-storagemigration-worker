@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 15:14:16
+ * @Last Modified time: 2019-11-02 15:53:34
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -24,13 +24,15 @@ const jobHandler = async (pid, code, signal) => {
     const db = new iDB();
     let idx = workingJob.findIndex(job => job.pid === pid);
     if (idx > -1) {
+        let { jobId, contentId } = workingJob[idx];
+
+        workingJob.splice(idx, 1);
+        
         if (code !== 0 || signal !== null) {
             logger.error(`${pid} return code ${code} and signal ${signal}`);
-            await db.report(workingJob[idx].jobId, "F");
-            logger.error(`[${pid} - ${workingJob[idx].contentId}] report "F" from main`);
+            await db.report(jobId, "F");
+            logger.error(`[${pid} - ${contentId}] report "F" from main`);
         }
-        
-        workingJob.splice(idx, 1);
     }
 }
 
@@ -91,7 +93,7 @@ const checkWorkingJob = () => {
 
         // Jobs that have been delayed for more than 2 hours(7200s) are treated as delayedJob.
         let currTime = Math.floor(Date.now() / 1000);
-        let abnormalJobs = workingJob.filter(job => ((job.startAt + parseInt(process.env.WORKER_MAXIMUM_ALIVE_DURATION)) < currTime || (job.hb + 60) < currTime));
+        let abnormalJobs = workingJob.filter(job => ((parseInt(job.startAt) + parseInt(process.env.WORKER_MAXIMUM_ALIVE_DURATION)) < currTime || (job.hb + 60) < currTime));
         if (abnormalJobs.length > 0) {
             logger.debug(`over 4hour delayed job(${abnormalJobs.length}): ${JSON.stringify(abnormalJobs)}`);
 
