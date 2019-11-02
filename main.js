@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 14:56:06
+ * @Last Modified time: 2019-11-02 15:14:16
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -20,12 +20,12 @@ const sleep = (sec) => {
     });
 }
 
-const jobHandler = async (pid, status) => {
+const jobHandler = async (pid, code, signal) => {
     const db = new iDB();
     let idx = workingJob.findIndex(job => job.pid === pid);
     if (idx > -1) {
-        if (status !== 0) {
-            logger.error(`${pid} return code ${status}`);
+        if (code !== 0 || signal !== null) {
+            logger.error(`${pid} return code ${code} and signal ${signal}`);
             await db.report(workingJob[idx].jobId, "F");
             logger.error(`[${pid} - ${workingJob[idx].contentId}] report "F" from main`);
         }
@@ -52,7 +52,7 @@ const createWorker = async () => {
             } else { // non-exist worker
                 logger.error(`Invalid worker ${worker.pid}`);
 
-                await jobHandler(worker.pid, 1);
+                await jobHandler(worker.pid, 1, null);
 
                 createWorker();
             }
@@ -66,7 +66,7 @@ const createWorker = async () => {
     worker.on('exit', async (code, signal) => {
         logger.debug(`worker ${worker.pid} exit code(${code}) / signal(${signal})`);
         
-        await jobHandler(worker.pid, code);
+        await jobHandler(worker.pid, code, signal);
 
         if (signal === "SIGKILL" || signal === "SIGABRT") {
             logger.error(`Waiting for create new worker until Network stabilize`);
@@ -79,7 +79,7 @@ const createWorker = async () => {
     worker.on('error', async (err) => {
         logger.error(`Event Emitted error: ${err.stack}`);
 
-        await jobHandler(worker.pid, 1);
+        await jobHandler(worker.pid, 1, null);
 
         createWorker();
     });
@@ -96,7 +96,7 @@ const checkWorkingJob = () => {
             logger.debug(`over 4hour delayed job(${abnormalJobs.length}): ${JSON.stringify(abnormalJobs)}`);
 
             abnormalJobs.map(async (job) => {
-                await jobHandler(job.pid, 1);
+                await jobHandler(job.pid, 1, null);
             });
         }
     }, 60000);
