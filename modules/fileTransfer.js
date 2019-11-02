@@ -2,14 +2,15 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-31 15:03:24
+ * @Last Modified time: 2019-11-02 16:43:30
  */
 import container from './logger';
 import http from 'http';
 import https from 'https';
 import mime from 'mime';
 import path from 'path';
-import request from 'axios';
+// import request from 'axios';
+import request from './downloader';
 import {
     Aborter,
     BlockBlobURL,
