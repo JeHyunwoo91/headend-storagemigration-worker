@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 15:26:45
+ * @Last Modified time: 2019-11-04 09:35:44
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -16,9 +16,8 @@ import s3 from './modules/s3ListObjects';
 const logger = container.get('migcliLogger');
 const queueEventEmitter = new EventEmitter();
 
-const CONTAINERS = ["dash", "hls", "mp4", "etc"];
-const STORAGE_OVERLOAD_ERROR_WORD = 'ServerBusy';
-const READ_ECONNRESET_ERROR_WORD = 'ECONNRESET';
+// const CONTAINERS = ["dash", "hls", "mp4", "etc"];
+const CONTAINERS = ["mp4", "etc"];
 
 const fileTransferMng = async (meta, _db) => {
     if (meta === undefined) {

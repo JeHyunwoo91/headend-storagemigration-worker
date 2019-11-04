@@ -2,15 +2,15 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 16:43:30
+ * @Last Modified time: 2019-11-04 09:24:36
  */
 import container from './logger';
 import http from 'http';
 import https from 'https';
 import mime from 'mime';
 import path from 'path';
-// import request from 'axios';
-import request from './downloader';
+import request from 'axios';
+// import request from './downloader';
 import {
     Aborter,
     BlockBlobURL,
@@ -28,6 +28,11 @@ const CONTAINER_NAME = process.env.AZURE_STORAGE_CONTAINER_NAME;
 const ONE_MEGABYTE = 1024 * 1024;
 const FOUR_MEGABYTES = 4 * ONE_MEGABYTE;
 const TEN_MEGABYTES = 10 * ONE_MEGABYTE;
+
+const httpsAgent = new https.Agent({
+    keepAlive: true,
+    maxSockets: 100,
+});
 
 /**
  * TODO FileTransfer
@@ -59,7 +64,8 @@ class FileTransfer {
         let stream = await request({
             method: 'get',
             url: url,
-            responseType: 'stream'
+            responseType: 'stream',
+            httpsAgent: httpsAgent
         });
         
         const uploadOptions = {

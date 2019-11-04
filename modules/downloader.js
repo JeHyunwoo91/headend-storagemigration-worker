@@ -2,15 +2,21 @@
  * @Author: Mathias.Je 
  * @Date: 2019-11-02 16:33:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 17:19:22
+ * @Last Modified time: 2019-11-04 09:25:10
  */
 import axios from 'axios';
+import https from 'https';
+
+const httpsAgent = new https.Agent({
+    keepAlive: true,
+    maxSockets: 100,
+});
 
 const MAX_REQUESTS_COUNT = process.env.MAX_REQUESTS_COUNT;
 const REQUEST_INTERVAL_MS = process.env.REQUEST_INTERVAL_MS;
 let PENDING_REQUESTS = 0;
 
-const downloader = axios.create({});
+const downloader = axios.create({httpsAgent: httpsAgent});
 
 downloader.interceptors.request.use(config => {
     return new Promise((resolve, reject) => {
