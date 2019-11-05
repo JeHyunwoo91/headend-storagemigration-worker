@@ -74,7 +74,7 @@ class FileTransfer {
         
         const uploadOptions = {
             bufferSize: parseInt(process.env.UPLOAD_BUFFER_SIZE),
-            maxBuffers: 5,
+            maxBuffers: parseInt(process.env.UPLOAD_MAX_BUFFERS),
         };
 
         await uploadStreamToBlockBlob(
