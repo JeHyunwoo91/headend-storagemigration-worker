@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-05 16:24:07
+ * @Last Modified time: 2019-11-06 08:18:54
  */
 import container from './logger';
 import http from 'http';
@@ -77,17 +77,22 @@ class FileTransfer {
             maxBuffers: parseInt(process.env.UPLOAD_MAX_BUFFERS),
         };
 
-        await uploadStreamToBlockBlob(
-            this.aborter,
-            stream.data,
-            blockBlobURL,
-            uploadOptions.bufferSize,
-            uploadOptions.maxBuffers,
-            {
-                // progress: ev => logger.debug(`uploadStream ev: ${JSON.stringify(ev)}`),
-                blobHTTPHeaders: { blobContentType: mime.getType(path.extname(key)) }
-            }
-        );
+        try {
+            await uploadStreamToBlockBlob(
+                this.aborter,
+                stream.data,
+                blockBlobURL,
+                uploadOptions.bufferSize,
+                uploadOptions.maxBuffers,
+                {
+                    // progress: ev => logger.debug(`uploadStream ev: ${JSON.stringify(ev)}`),
+                    blobHTTPHeaders: { blobContentType: mime.getType(path.extname(key)) }
+                }
+            );
+        } catch (error) {
+            console.log("[uploadStreamToBlockBlob]: ", error);
+            throw error;
+        }
     }
 
     async _retry(fn, ...args) {
@@ -109,7 +114,7 @@ class FileTransfer {
                 if (axios.isCancel(err)) return;
                 throw retry(err);
             }
-        })
+        });
     } 
     
     async request(config) {
@@ -120,7 +125,6 @@ class FileTransfer {
         if (!config) return { timeout: this.options.timeout }
         else if (!config.timeout)
             config.timeout = this.options.timeout;
-        // console.log(config)
         return config
     }
 }

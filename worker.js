@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-05 16:10:33
+ * @Last Modified time: 2019-11-06 08:33:53
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -99,7 +99,12 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
             // let key = content.Key; 
             let channelId = meta.channelId;
             let url = `https://vod-${channelId}.cdn.wavve.com/${key}?Policy=${process.env.POLICY}`;
-            await uploader.upload(url, key);
+            try {
+                await uploader.upload(url, key);
+            } catch (error) {
+                logger.error(`upload Error: ${error.message}`);
+                throw error;
+            }
             // console.log(`remain queue size: ${queue.size} / ${queue.pending} - uploaded ${key}`);
         }).catch(error => queueEventEmitter.emit('error', key, error));
     });
