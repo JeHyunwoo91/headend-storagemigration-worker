@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-05 09:06:42
+ * @Last Modified time: 2019-11-05 16:10:33
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -16,15 +16,7 @@ import s3 from './modules/s3ListObjects';
 const logger = container.get('migcliLogger');
 const queueEventEmitter = new EventEmitter();
 
-// const CONTAINERS = ["dash", "hls", "mp4", "etc"];
-const CONTAINERS = ["mp4", "etc"];
-// const CONTAINERS = ["dash"];
-
 const fileTransferMng = async (meta, _db) => {
-    if (meta === undefined) {
-        return true;
-    }
-
     /**
      * 미디어버젼이 1이상이 되지만 최근 미디어버젼 입수 시 실패(acquire = F)한 case에 대해서는
      * 이전(mediaVersion--) 미디어버젼에 해당하는 파일을 이전한다.
@@ -42,6 +34,10 @@ const fileTransferMng = async (meta, _db) => {
 
             return true;
         }
+    }
+    let CONTAINERS = ["dash", "hls", "mp4", "etc"];
+    if (process.env.ISDRM == "N") {
+        CONTAINERS = ["mp4", "etc"];
     }
 
     await pMap(CONTAINERS, async container => {
@@ -99,10 +95,10 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
             }
         }
 
-
         queue.add(async () => {
-            let key = content.Key; 
-            let url = `http://d5d8j4q1prei5.cloudfront.net/${key}`;
+            // let key = content.Key; 
+            let channelId = meta.channelId;
+            let url = `https://vod-${channelId}.cdn.wavve.com/${key}?Policy=${process.env.POLICY}`;
             await uploader.upload(url, key);
             // console.log(`remain queue size: ${queue.size} / ${queue.pending} - uploaded ${key}`);
         }).catch(error => queueEventEmitter.emit('error', key, error));

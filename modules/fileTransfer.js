@@ -2,15 +2,16 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-05 09:04:15
+ * @Last Modified time: 2019-11-05 16:24:07
  */
 import container from './logger';
 import http from 'http';
 import https from 'https';
 import mime from 'mime';
 import path from 'path';
-import request from 'axios';
-// import request from './downloader';
+
+import axios from 'axios';
+import retry from 'promise-retry';
 import {
     Aborter,
     BlockBlobURL,
@@ -29,13 +30,6 @@ const ONE_MEGABYTE = 1024 * 1024;
 const FOUR_MEGABYTES = 4 * ONE_MEGABYTE;
 const TEN_MEGABYTES = 10 * ONE_MEGABYTE;
 
-const httpsAgent = new https.Agent({
-    keepAlive: true,
-    keepAliveMsecs: 600000,
-    maxSockets: 100,
-    timeout: 600000
-});
-
 /**
  * TODO FileTransfer
  * ToBeDone:
@@ -52,6 +46,15 @@ class FileTransfer {
         this.serviceURL = new ServiceURL(`https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`, pipeline);
         this.containerURL = ContainerURL.fromServiceURL(this.serviceURL, CONTAINER_NAME);
         this.aborter = Aborter.none;
+
+        this.options = {
+            retries: 5,
+            factor: 2,
+            minTimeout: 1000,
+            maxTimeout: 30000,
+            timeout: 2000,
+            localTest: null
+        };
     }
 
     /**
@@ -61,21 +64,19 @@ class FileTransfer {
      *      a. url을 read stream으로 pipe하여 uploadStreamToBlockBlob()의 parameter로 전달
      */
     async upload(url, key) {
-        // logger.debug(`start upload ${key}`);
+        // console.log(`start upload ${key}`);
         const blockBlobURL = BlockBlobURL.fromContainerURL(this.containerURL, key);
-        let stream = await request({
+        let stream = await this.request({
             method: 'get',
             url: url,
             responseType: 'stream',
-            headers: { "X-Wavve-Token": "388efecbc8a2ea1731744eb18aeb0978" },
-            httpsAgent: httpsAgent
         });
         
         const uploadOptions = {
             bufferSize: parseInt(process.env.UPLOAD_BUFFER_SIZE),
             maxBuffers: 5,
         };
-        
+
         await uploadStreamToBlockBlob(
             this.aborter,
             stream.data,
@@ -87,8 +88,40 @@ class FileTransfer {
                 blobHTTPHeaders: { blobContentType: mime.getType(path.extname(key)) }
             }
         );
+    }
+
+    async _retry(fn, ...args) {
+        const options = {
+            retries: this.options.retries,
+            factor: this.options.factor,
+            minTimeout: this.options.minTimeout,
+            maxTimeout: this.options.maxTimeout
+        };
         
-        // console.log(`uploaded ${key}`);
+        if (this.options.retries === 0) {
+            return await fn.apply(null, args);
+        }
+        
+        return await retry(options, async (retry, number) => {
+            try {
+                return await fn.apply(null, args);
+            } catch (err) {
+                if (axios.isCancel(err)) return;
+                throw retry(err);
+            }
+        })
+    } 
+    
+    async request(config) {
+        return await this._retry(axios.request, this._setDefaultConfig(config));
+    }
+
+    _setDefaultConfig(config) {
+        if (!config) return { timeout: this.options.timeout }
+        else if (!config.timeout)
+            config.timeout = this.options.timeout;
+        // console.log(config)
+        return config
     }
 }
 

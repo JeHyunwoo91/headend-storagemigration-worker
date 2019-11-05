@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-14 17:04:00 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-04 09:38:51
+ * @Last Modified time: 2019-11-05 16:06:20
  */
 import mysql from 'mysql2/promise';
 import container from './logger';
@@ -41,6 +41,7 @@ class Meta {
                         ${process.env.TABLE_NAME} 
                     WHERE 
                         isMig = "${process.env.ISMIG}"
+                        and isDrm = "${process.env.ISDRM}"
                     ORDER BY 
                         j_UpdatedAt DESC 
                     LIMIT 1 

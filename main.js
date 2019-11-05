@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-02 15:53:34
+ * @Last Modified time: 2019-11-05 16:26:40
  */
 import { fork } from 'child_process';
 import container from './modules/logger';
@@ -38,8 +38,8 @@ const jobHandler = async (pid, code, signal) => {
 
 const createWorker = async () => {
     let worker = fork('worker.js');
+    let SLEEP_INTERVAL = 1;
     logger.debug(`Created worker ${worker.pid}`);
-    
 
     worker.on('message', async (msg) => {
         if (msg instanceof Object) { // worker getting new job
@@ -55,6 +55,8 @@ const createWorker = async () => {
                 logger.error(`Invalid worker ${worker.pid}`);
 
                 await jobHandler(worker.pid, 1, null);
+
+                await sleep(SLEEP_INTERVAL);
 
                 createWorker();
             }
@@ -72,8 +74,10 @@ const createWorker = async () => {
 
         if (signal === "SIGKILL" || signal === "SIGABRT") {
             logger.error(`Waiting for create new worker until Network stabilize`);
-            await sleep(process.env.SLEEP_INTERVAL);
+            SLEEP_INTERVAL = process.env.SLEEP_INTERVAL;
         }
+        
+        await sleep(SLEEP_INTERVAL);
 
         createWorker();
     });
@@ -82,6 +86,9 @@ const createWorker = async () => {
         logger.error(`Event Emitted error: ${err.stack}`);
 
         await jobHandler(worker.pid, 1, null);
+
+        SLEEP_INTERVAL = process.env.SLEEP_INTERVAL;
+        await sleep(SLEEP_INTERVAL);
 
         createWorker();
     });

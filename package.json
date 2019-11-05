@@ -20,6 +20,7 @@
     "mysql2": "^1.6.5",
     "p-map": "^3.0.0",
     "p-queue": "6.2.0",
+    "promise-retry": "^1.1.1",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.1.0",
     "@azure/storage-blob": "^10.4.0",
