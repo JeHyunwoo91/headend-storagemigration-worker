@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-06 10:17:05
+ * @Last Modified time: 2019-11-06 10:32:12
  */
 import container from './logger';
 import http from 'http';
@@ -102,15 +102,19 @@ class FileTransfer {
             maxTimeout: this.options.maxTimeout
         };
 
+        let key = args[4];
+
         if (this.options.retries === 0) {
             return await fn.apply(null, args);
         }
         
         return await retry(options, async (retry, number) => {
+            console.log("args1: ", args);
+            
             try {
                 return await fn.apply(null, args);
             } catch (err) {
-                logger.error(`[${args[4]}] Attempt ${number} failed. There are ${options.retries - number} retries left.`);
+                logger.error(`[${key}] Attempt ${number - 1} failed. There are ${options.retries - (number - 1)} retries left.`);
                 throw retry(err);
             }
         });
