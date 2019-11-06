@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-06 08:58:18
+ * @Last Modified time: 2019-11-06 09:54:56
  */
 import container from './logger';
 import http from 'http';
@@ -10,7 +10,7 @@ import https from 'https';
 import mime from 'mime';
 import path from 'path';
 
-import axios from 'axios';
+import request from 'axios';
 import retry from 'promise-retry';
 import {
     Aborter,
@@ -63,10 +63,10 @@ class FileTransfer {
      * ToBeDone:
      *      a. url을 read stream으로 pipe하여 uploadStreamToBlockBlob()의 parameter로 전달
      */
-    async upload(url, key) {
+    async _upload(aborter, containerURL, url, key) {
         // console.log(`start upload ${key}`);
-        const blockBlobURL = BlockBlobURL.fromContainerURL(this.containerURL, key);
-        let stream = await this.request({
+        const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, key);
+        let stream = await request({
             method: 'get',
             url: url,
             responseType: 'stream',
@@ -78,7 +78,7 @@ class FileTransfer {
         };
         
         await uploadStreamToBlockBlob(
-            this.aborter,
+            aborter,
             stream.data,
             blockBlobURL,
             uploadOptions.bufferSize,
@@ -89,7 +89,11 @@ class FileTransfer {
             }
         );
     }
-
+    
+    async upload(url,key){
+        return await this._retry(this._upload,  this.aborter, this.containerURL, url, key);
+    }
+    
     async _retry(fn, ...args) {
         const options = {
             retries: this.options.retries,
@@ -103,16 +107,17 @@ class FileTransfer {
         }
         
         return await retry(options, async (retry, number) => {
+            logger.error(`[${args[4]}] Attempt ${number} failed. there are ${options.retries - nomber} retries left.`);
             try {
                 return await fn.apply(null, args);
             } catch (err) {
-                if (axios.isCancel(err)) return;
+                // if (axios.isCancel(err)) return;
                 throw retry(err);
             }
         });
     } 
     
-    async request(config) {
+    /* async request(config) {
         return await this._retry(axios.request, this._setDefaultConfig(config));
     }
 
@@ -121,7 +126,7 @@ class FileTransfer {
         else if (!config.timeout)
             config.timeout = this.options.timeout;
         return config
-    }
+    } */
 }
 
 export default FileTransfer;
