@@ -2,10 +2,10 @@
  * @Author: Mathias.Je 
  * @Date: 2019-11-02 16:33:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-04 09:25:10
+ * @Last Modified time: 2019-11-06 11:15:13
  */
-import axios from 'axios';
-import https from 'https';
+const axios = require('axios');
+const https = require('https');
 
 const httpsAgent = new https.Agent({
     keepAlive: true,
@@ -38,4 +38,4 @@ downloader.interceptors.response.use(response => {
     return Promise.reject(error);
 });
 
-export default downloader;
+module.exports = downloader;

@@ -2,16 +2,16 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-06 09:58:10
+ * @Last Modified time: 2019-11-06 12:31:16
  */
-import db from './modules/meta';
-import EventEmitter from 'eventemitter3';
-import ft from './modules/fileTransfer';
-import container from './modules/logger';
-import path from 'path';
-import pMap from 'p-map';
-import PQueue from 'p-queue';
-import s3 from './modules/s3ListObjects';
+const db = require('./modules/meta');
+const EventEmitter = require('eventemitter3');
+const ft = require('./modules/fileTransfer');
+const container = require('./modules/logger');
+const path = require('path');
+const pMap = require('p-map');
+const { default: pQueue} = require('p-queue');
+const s3 = require('./modules/s3ListObjects');
 
 const logger = container.get('migcliLogger');
 const queueEventEmitter = new EventEmitter();
@@ -35,6 +35,7 @@ const fileTransferMng = async (meta, _db) => {
             return true;
         }
     }
+    
     let CONTAINERS = ["dash", "hls", "mp4", "etc"];
     if (process.env.ISDRM == "N") {
         CONTAINERS = ["mp4", "etc"];
@@ -44,8 +45,8 @@ const fileTransferMng = async (meta, _db) => {
         let concurrency = container === "mp4" ? 
             parseInt(process.env.CONCURRENCY_LEVEL_OF_MP4) : 
             parseInt(process.env.CONCURRENCY_LEVEL_OF_OTHERS);
-        
-        const queue = new PQueue({ concurrency: concurrency });
+
+        const queue = new pQueue({ concurrency: concurrency });
         const uploader = new ft();
 
         logger.debug(`started move [${container}/${meta.contentId}]`);
@@ -152,12 +153,6 @@ const hb = () => {
     setInterval(() => {
         process.send('HB');
     }, 1000);
-}
-
-const sleep = (sec) => {
-    return new Promise((resolve, reject) => {
-        setTimeout(resolve, parseInt(sec) * 1000);
-    });
 }
 
 (async () => {

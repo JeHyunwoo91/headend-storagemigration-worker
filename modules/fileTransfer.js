@@ -2,17 +2,17 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-06 10:33:48
+ * @Last Modified time: 2019-11-06 12:40:21
  */
-import container from './logger';
-import http from 'http';
-import https from 'https';
-import mime from 'mime';
-import path from 'path';
+const container = require('./logger');
+const http = require('http');
+const https = require('https');
+const mime = require('mime');
+const path = require('path');
 
-import request from 'axios';
-import retry from 'promise-retry';
-import {
+const request = require('axios');
+const retry = require('promise-retry');
+const {
     Aborter,
     BlockBlobURL,
     ContainerURL,
@@ -20,7 +20,8 @@ import {
     SharedKeyCredential,
     StorageURL,
     uploadStreamToBlockBlob
-} from '@azure/storage-blob';
+} = require('@azure/storage-blob');
+// const az = require('@azure/storage-blob');
 
 const logger = container.get('migcliLogger');
 
@@ -102,8 +103,6 @@ class FileTransfer {
             maxTimeout: this.options.maxTimeout
         };
 
-        let key = args[4];
-
         if (this.options.retries === 0) {
             return await fn.apply(null, args);
         }
@@ -112,22 +111,11 @@ class FileTransfer {
             try {
                 return await fn.apply(null, args);
             } catch (err) {
-                logger.error(`[${key}] Attempt ${number - 1} failed. There are ${options.retries - (number - 1)} retries left.`);
+                // logger.error(`[${err.config.url.split('?')[0]}] Attempt ${number} failed. There are ${options.retries - (number - 1)} retries left.`);
                 throw retry(err);
             }
         });
-    } 
-    
-    /* async request(config) {
-        return await this._retry(axios.request, this._setDefaultConfig(config));
     }
-
-    _setDefaultConfig(config) {
-        if (!config) return { timeout: this.options.timeout }
-        else if (!config.timeout)
-            config.timeout = this.options.timeout;
-        return config
-    } */
 }
 
-export default FileTransfer;
+module.exports = FileTransfer;

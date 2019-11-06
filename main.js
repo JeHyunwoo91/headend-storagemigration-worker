@@ -2,12 +2,12 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:41:03 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-05 16:26:40
+ * @Last Modified time: 2019-11-06 11:19:55
  */
-import { fork } from 'child_process';
-import container from './modules/logger';
-import dotenv from 'dotenv';
-import iDB from './modules/meta';
+const cp = require('child_process');
+const container = require('./modules/logger');
+const dotenv = require('dotenv');
+const iDB = require('./modules/meta');
 dotenv.config();
 
 const logger = container.get('migcliLogger');
@@ -37,7 +37,7 @@ const jobHandler = async (pid, code, signal) => {
 }
 
 const createWorker = async () => {
-    let worker = fork('worker.js');
+    let worker = cp.fork('worker.js');
     let SLEEP_INTERVAL = 1;
     logger.debug(`Created worker ${worker.pid}`);
 

@@ -2,12 +2,12 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-19 14:21:43 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-27 17:32:14
+ * @Last Modified time: 2019-11-06 11:13:34
  */
-import { createLogger, format, transports, loggers, Container } from 'winston';
-import 'winston-daily-rotate-file';
-import fs from 'fs';
-import moment from 'moment-timezone';
+const { createLogger, format, transports, loggers, Container } = require('winston');
+require('winston-daily-rotate-file');
+const fs = require('fs');
+const moment = require('moment-timezone');
 
 const { combine, printf } = format;
 const BASE_LOG_PATH = "/data/log/migcli/";
@@ -56,6 +56,4 @@ container.add('migcliLogger', {
 // Azure VM은 KST 설정이 불가하여 custom timestamp format을 사용한다.
 const timezoned = () => moment().tz('Asia/Seoul').format("YYYY-MM-DD HH:mm:ss.SS");
 
-
-
-export default container;
+module.exports = container;

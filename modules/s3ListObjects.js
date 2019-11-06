@@ -2,9 +2,9 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-19 15:50:14 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-10-29 15:52:39
+ * @Last Modified time: 2019-11-06 11:14:04
  */
-import AWS from 'aws-sdk';
+const AWS = require('aws-sdk');
 
 class S3ListObjects {
     constructor() {
@@ -42,4 +42,4 @@ class S3ListObjects {
     }
 }
 
-export default S3ListObjects;
+module.exports = S3ListObjects;

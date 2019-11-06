@@ -2,10 +2,10 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-14 17:04:00 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-05 16:06:20
+ * @Last Modified time: 2019-11-06 11:14:58
  */
-import mysql from 'mysql2/promise';
-import container from './logger';
+const mysql = require('mysql2/promise');
+const container = require('./logger');
 
 const logger = container.get('migcliLogger');
 
@@ -104,4 +104,4 @@ class Meta {
     }
 }
 
-export default Meta;
+module.exports = Meta;
