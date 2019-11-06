@@ -107,7 +107,6 @@ class FileTransfer {
         }
         
         return await retry(options, async (retry, number) => {
-            logger.error(`[${args[4]}] Attempt ${number} failed. there are ${options.retries - number} retries left.`);
             try {
                 return await fn.apply(null, args);
             } catch (err) {
