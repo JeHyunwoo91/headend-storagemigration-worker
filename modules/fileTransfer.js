@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-06 09:54:56
+ * @Last Modified time: 2019-11-06 10:17:05
  */
 import container from './logger';
 import http from 'http';
@@ -101,7 +101,7 @@ class FileTransfer {
             minTimeout: this.options.minTimeout,
             maxTimeout: this.options.maxTimeout
         };
-        
+
         if (this.options.retries === 0) {
             return await fn.apply(null, args);
         }
@@ -110,7 +110,7 @@ class FileTransfer {
             try {
                 return await fn.apply(null, args);
             } catch (err) {
-                // if (axios.isCancel(err)) return;
+                logger.error(`[${args[4]}] Attempt ${number} failed. There are ${options.retries - number} retries left.`);
                 throw retry(err);
             }
         });
