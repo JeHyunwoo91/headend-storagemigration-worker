@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-06 08:18:54
+ * @Last Modified time: 2019-11-06 08:58:18
  */
 import container from './logger';
 import http from 'http';
@@ -76,23 +76,18 @@ class FileTransfer {
             bufferSize: parseInt(process.env.UPLOAD_BUFFER_SIZE),
             maxBuffers: parseInt(process.env.UPLOAD_MAX_BUFFERS),
         };
-
-        try {
-            await uploadStreamToBlockBlob(
-                this.aborter,
-                stream.data,
-                blockBlobURL,
-                uploadOptions.bufferSize,
-                uploadOptions.maxBuffers,
-                {
-                    // progress: ev => logger.debug(`uploadStream ev: ${JSON.stringify(ev)}`),
-                    blobHTTPHeaders: { blobContentType: mime.getType(path.extname(key)) }
-                }
-            );
-        } catch (error) {
-            console.log("[uploadStreamToBlockBlob]: ", error);
-            throw error;
-        }
+        
+        await uploadStreamToBlockBlob(
+            this.aborter,
+            stream.data,
+            blockBlobURL,
+            uploadOptions.bufferSize,
+            uploadOptions.maxBuffers,
+            {
+                // progress: ev => logger.debug(`uploadStream ev: ${JSON.stringify(ev)}`),
+                blobHTTPHeaders: { blobContentType: mime.getType(path.extname(key)) }
+            }
+        );
     }
 
     async _retry(fn, ...args) {

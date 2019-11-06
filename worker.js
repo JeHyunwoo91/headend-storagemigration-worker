@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-10 10:42:31 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-06 08:33:53
+ * @Last Modified time: 2019-11-06 08:57:45
  */
 import db from './modules/meta';
 import EventEmitter from 'eventemitter3';
@@ -11,6 +11,7 @@ import container from './modules/logger';
 import path from 'path';
 import pMap from 'p-map';
 import PQueue from 'p-queue';
+import pRetry from 'p-retry';
 import s3 from './modules/s3ListObjects';
 
 const logger = container.get('migcliLogger');
@@ -99,12 +100,12 @@ const fileTransferIntf = async (meta, container, uploader, queue, continuationTo
             // let key = content.Key; 
             let channelId = meta.channelId;
             let url = `https://vod-${channelId}.cdn.wavve.com/${key}?Policy=${process.env.POLICY}`;
-            try {
-                await uploader.upload(url, key);
-            } catch (error) {
-                logger.error(`upload Error: ${error.message}`);
-                throw error;
-            }
+            await pRetry(() => uploader.upload(url, key), {
+                onFailedAttempt: error => {
+                    logger.error(`[${key}] Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`);
+                }, retries: 5
+            });
+            // await uploader.upload(url, key);
             // console.log(`remain queue size: ${queue.size} / ${queue.pending} - uploaded ${key}`);
         }).catch(error => queueEventEmitter.emit('error', key, error));
     });
