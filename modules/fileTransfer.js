@@ -2,7 +2,7 @@
  * @Author: Mathias.Je 
  * @Date: 2019-10-17 10:18:58 
  * @Last Modified by: Mathias.Je
- * @Last Modified time: 2019-11-06 10:32:12
+ * @Last Modified time: 2019-11-06 10:33:48
  */
 import container from './logger';
 import http from 'http';
@@ -109,8 +109,6 @@ class FileTransfer {
         }
         
         return await retry(options, async (retry, number) => {
-            console.log("args1: ", args);
-            
             try {
                 return await fn.apply(null, args);
             } catch (err) {
